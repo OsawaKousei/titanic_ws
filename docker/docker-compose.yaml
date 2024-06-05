@@ -1,8 +1,8 @@
 version: "3"
 
 services:
-  dl_ws:
-    container_name: dl_ws
+  titanic_ws:
+    container_name: titanic_ws
     build:
       context: .
       args:
@@ -16,14 +16,16 @@ services:
         - PYTHON_VERSION=${PYTHON_VERSION}
         - CUDA_VERSION=${CUDA_VERSION}
       dockerfile: Dockerfile
-    image: n622jwith/dl_ws:latest
+    image: n622jwith/titanic_ws:latest
     environment:
       - DISPLAY=${DISPLAY}
       - "QT_X11_NO_MITSHM=1"
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - $HOME/.Xauthority/:/home/${USER_NAME}/.Xauthority:ro
-    hostname: dl_ws
+      - $HOME/.ssh:/home/${USER_NAME}/.ssh:ro
+      - $HOME/ML/titanic_ws/data/:/home/${USER_NAME}/data/
+    hostname: titanic_ws
     deploy:
       resources:
         reservations:
