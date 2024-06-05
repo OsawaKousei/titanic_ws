@@ -1,0 +1,6 @@
+batch_size: 100
+weight_decay: 0.0
+learning_rate: 0.3
+epoch: 136
+dropout: 0.0
+threshold: 0.5
