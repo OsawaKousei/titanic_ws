@@ -1,22 +1,17 @@
 import os
-import random
 import warnings
 
 import matplotlib.pyplot as plt  # import the library to draw the graph
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 
 # pytorch
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import torchvision
 from early_stopping import EarlyStopping
-from fancyimpute import IterativeImputer
 from model import Net
-from sklearn.discriminant_analysis import StandardScaler
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -53,12 +48,12 @@ print("y_test.shape: ", y_test.shape)
 
 # ハイパーパラメータの設定
 BATCH_SIZE = 100
-WEIGHT_DECAY = 0.0
-LEARNING_RATE = 0.3
-EPOCH = 200
-DROPOUT = 0.0
+WEIGHT_DECAY = 0.5
+LEARNING_RATE = 0.0001
+EPOCH = 500
+DROPOUT = 0.1
 THRESHOLD = 0.5
-PATIENCE = 50  # 早期終了のパラメータ
+PATIENCE = 300  # 早期終了のパラメータ
 
 # データをpytorchのtensorに変換
 X_train = torch.tensor(X_train.values, dtype=torch.float32)
@@ -172,6 +167,17 @@ accuracy_maen = np.mean(test_acc_value[-10:])
 accuracy_maen = round(accuracy_maen, 3)
 print("accuracy_maen: ", accuracy_maen)
 
+# ハイパーパラメータをtxtファイルに保存
+with open("./titanic_earlysttoping/params/hyperparameter.txt", "w") as f:
+    f.write(
+        f"batch_size: {BATCH_SIZE}\n"
+        f"weight_decay: {WEIGHT_DECAY}\n"
+        f"learning_rate: {LEARNING_RATE}\n"
+        f"epoch: {epoch}\n"
+        f"dropout: {DROPOUT}\n"
+        f"threshold: {THRESHOLD}\n"
+    )
+
 plt.figure(figsize=(6, 6))  # グラフ描画用
 
 # 以下グラフ描画
@@ -196,3 +202,18 @@ plt.text(
 )
 plt.savefig("./titanic_earlysttoping/graphs/accuracy_image.png")
 plt.show()
+
+# モデルで予測
+y_pred = []
+for inputs, _ in testloader:
+    inputs = inputs.to(device)
+    outputs = net(inputs)
+    outputs = F.softmax(outputs, dim=1)
+    outputs = (outputs[:, 1] > THRESHOLD).long()
+    y_pred.extend(outputs.tolist())
+
+# 予測結果を保存
+y_pred = pd.DataFrame(y_pred, columns=["Perished"])
+y_pred.to_csv(  # type: ignore
+    "./titanic_earlysttoping/predictions/submission.csv", index=False
+)
