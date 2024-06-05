@@ -1,24 +1,13 @@
 import os
-import random
 import warnings
 
-import matplotlib.pyplot as plt  # import the library to draw the graph
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 
 # pytorch
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import torchvision
-from early_stopping import EarlyStopping
 from fancyimpute import IterativeImputer
-from model import Net
 from sklearn.discriminant_analysis import StandardScaler
-from sklearn.model_selection import train_test_split
-from torch.utils.data import DataLoader, TensorDataset
 
 warnings.filterwarnings("ignore")
 
@@ -224,7 +213,7 @@ features = [
 
 # 特徴量と目的変数に分割
 X = train[features + ["Age"]]
-y = train["Perished"]
+Y = train["Perished"]
 
 # 標準化
 scaler = StandardScaler()
@@ -232,4 +221,4 @@ X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
 
 # csvファイルに保存
 X.to_csv("./titanic_earlysttoping/fixed_data/X.csv", index=False)
-y.to_csv("./titanic_earlysttoping/fixed_data/Y.csv", index=False)
+Y.to_csv("./titanic_earlysttoping/fixed_data/Y.csv", index=False)
