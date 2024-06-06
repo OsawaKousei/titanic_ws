@@ -10,8 +10,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from deep_model import Net
 from early_stopping import EarlyStopping
+from model import Net
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -32,8 +32,20 @@ reset_seed(622)
 
 # データの読み込み
 path = "./titanic_detailed/fixed_data/"
-X = pd.read_csv(path + "X.csv")
-Y = pd.read_csv(path + "Y.csv")
+TRAIN = pd.read_csv(path + "X.csv")
+PRED = pd.read_csv(path + "Y.csv")
+
+# TRAINからPassengerIdを切り捨て
+TRAIN = TRAIN.drop("PassengerId", axis=1)
+# TRAINからPerishedを取得
+Y = TRAIN["Perished"]
+# TRAINからPerishedを削除
+X = TRAIN.drop("Perished", axis=1)
+
+# PREDからPassengerIdを取得
+PassengerId = PRED["PassengerId"]
+# PREDからPassengerIdを削除
+X_pred = PRED.drop("PassengerId", axis=1)
 
 # 訓練データとテストデータに分割
 X_train, X_test, y_train, y_test = train_test_split(
@@ -45,12 +57,13 @@ print("X_train_scaled.shape: ", X_train.shape)
 print("X_test_scaled.shape: ", X_test.shape)
 print("y_train.shape: ", y_train.shape)
 print("y_test.shape: ", y_test.shape)
+print("X_pred.shape: ", X_pred.shape)
 
 # ハイパーパラメータの設定
 BATCH_SIZE = 100
 WEIGHT_DECAY = 0.5
 LEARNING_RATE = 0.0001
-EPOCH = 1000
+EPOCH = 500
 DROPOUT = 0.1
 THRESHOLD = 0.5
 PATIENCE = 1000  # 早期終了のパラメータ
@@ -60,16 +73,21 @@ X_train = torch.tensor(X_train.values, dtype=torch.float32)
 y_train = torch.tensor(y_train.values, dtype=torch.int64).squeeze()
 X_test = torch.tensor(X_test.values, dtype=torch.float32)
 y_test = torch.tensor(y_test.values, dtype=torch.int64).squeeze()
+X_pred = torch.tensor(X_pred.values, dtype=torch.float32)
 
 # inputをx_train, targetをy_trainとしてdatasetを作成
 train_dataset = TensorDataset(X_train, y_train)
 test_dataset = TensorDataset(X_test, y_test)
+pred_dataset = TensorDataset(X_pred, torch.zeros(X_pred.shape[0]))
 # datasetをDataLoaderに渡す
 trainloader = DataLoader(
     train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=1
 )
 testloader = DataLoader(
     test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=1
+)
+predloader = DataLoader(
+    pred_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=1
 )
 
 
@@ -203,15 +221,15 @@ plt.show()
 
 # モデルで予測
 y_pred = []
-for inputs, _ in testloader:
+for inputs, _ in predloader:
     inputs = inputs.to(device)
     outputs = net(inputs)
     outputs = F.softmax(outputs, dim=1)
     outputs = (outputs[:, 1] > THRESHOLD).long()
     y_pred.extend(outputs.tolist())
 
-# 予測結果を保存
+# 予測結果をPassengerIdと結合
 y_pred = pd.DataFrame(y_pred, columns=["Perished"])
-y_pred.to_csv(  # type: ignore
-    "./titanic_detailed/predictions/submission.csv", index=False
-)
+y_pred = pd.concat([PassengerId, y_pred], axis=1)
+# 予測結果をcsvファイルに保存
+y_pred.to_csv("./titanic_detailed/predictions/submission.csv", index=True)  # type: ignore
