@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from early_stopping import EarlyStopping
+from mixup import mixup
 from simple_model import Net
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
@@ -61,12 +62,17 @@ print("X_pred.shape: ", X_pred.shape)
 
 # ハイパーパラメータの設定
 BATCH_SIZE = 100
-WEIGHT_DECAY = 0.05
+WEIGHT_DECAY = 0.01
 LEARNING_RATE = 0.0001
-EPOCH = 500
-DROPOUT = 0.005
+EPOCH = 300
+DROPOUT = 0.001
 THRESHOLD = 0.5
 PATIENCE = 1000  # 早期終了のパラメータ
+MIX_ALPHA = 0.1  # mixupのalpha
+MIX_NUM = 1000  # mixupの回数
+
+# 訓練データを水増し
+# X_train, y_train = mixup(X_train, y_train, MIX_ALPHA, MIX_NUM)
 
 # データをpytorchのtensorに変換
 X_train = torch.tensor(X_train.values, dtype=torch.float32)
