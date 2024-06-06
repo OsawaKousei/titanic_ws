@@ -3,7 +3,9 @@ import warnings
 import numpy as np
 import pandas as pd
 from fancyimpute import IterativeImputer
+from scipy.stats import chi2_contingency
 from sklearn.discriminant_analysis import StandardScaler
+from sklearn.impute import SimpleImputer
 
 warnings.filterwarnings("ignore")
 
@@ -150,33 +152,21 @@ features_ = [
     "Family_size",
 ]
 
-# MICE補完の設定
-imputer = IterativeImputer(
-    random_state=42, max_iter=20, min_value=0, max_value=80
-)
+# 欠損値を補完
+impute_ages = np.zeros((2, 3))
+for i in range(0, 2):
+    for j in range(0, 3):
+        impute_df = data[(data["Sex"] == i) & (data["Pclass"] == j + 1)][
+            "Age"
+        ].dropna()
+        impute_ages[i, j] = int(impute_df.median())
 
-# 欠損値補完の実行
-data["Age"] = imputer.fit_transform(
-    np.hstack((data[features_], np.expand_dims(data["Age"], axis=1)))
-)[:, -1]
-
-# 補完後の年齢の統計量を確認
-print("補完後の年齢の統計量 (data):")
-print(data["Age"].describe())
-
-# 負の年齢があるかを確認
-negative_ages_data = data[data["Age"] < 0]
-if not negative_ages_data.empty:
-    print(f"負の年齢が {len(negative_ages_data)} 件あります。")
-    # 負の値を持つ行のインデックス
-    neg_idx_data = negative_ages_data.index
-    # 年齢を再補完（負の値を0歳に設定し、再補完）
-    data.loc[neg_idx_data, "Age"] = np.nan
-    data["Age"] = imputer.fit_transform(
-        np.hstack((data[features_], np.expand_dims(data["Age"], axis=1)))
-    )[:, -1]
-    print("再補完後の年齢の統計量 (data):")
-    print(data["Age"].describe())
+for i in range(0, 2):
+    for j in range(0, 3):
+        data.loc[
+            (data.Age.isnull()) & (data.Sex == i) & (data.Pclass == j + 1),
+            "Age",
+        ] = impute_ages
 
 # ダミー変数化
 data = pd.get_dummies(

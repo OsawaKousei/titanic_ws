@@ -232,4 +232,4 @@ for inputs, _ in predloader:
 y_pred = pd.DataFrame(y_pred, columns=["Perished"])
 y_pred = pd.concat([PassengerId, y_pred], axis=1)
 # 予測結果をcsvファイルに保存
-y_pred.to_csv("./titanic_simplenet/predictions/submission.csv", index=True)  # type: ignore
+y_pred.to_csv("./titanic_simplenet/predictions/submission.csv", index=False)  # type: ignore
