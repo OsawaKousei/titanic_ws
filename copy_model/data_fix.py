@@ -184,9 +184,11 @@ Male_Adult_List = Male_Adult_Group.groupby("Surname")["Perished"].mean()
 Dead_list = set(
     Female_Child_Group[Female_Child_Group.apply(lambda x: x == 1)].index
 )
+print(Dead_list)
 Survived_list = set(
     Male_Adult_List[Male_Adult_List.apply(lambda x: x == 0)].index
 )
+print(Survived_list)
 
 # データをprefxデータに複製
 prefix = data.copy()
@@ -194,13 +196,11 @@ prefix = data.copy()
 prefix["Perished"] = -1
 # prefixデータでデッドリストとサバイブリストの該当者の'perished'を0, 1に置換
 prefix.loc[
-    (prefix["Perished"].isnull())
-    & (prefix["Surname"].apply(lambda x: x in Dead_list)),
+    (prefix["Surname"].apply(lambda x: x in Dead_list)),
     ["Perished"],
 ] = 0
 prefix.loc[
-    (prefix["Perished"].isnull())
-    & (prefix["Surname"].apply(lambda x: x in Survived_list)),
+    (prefix["Surname"].apply(lambda x: x in Survived_list)),
     ["Perished"],
 ] = 1
 # prefixデータからPassengerIdとPerishedを取得
