@@ -2,13 +2,15 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from fancyimpute import IterativeImputer
 from sklearn.discriminant_analysis import StandardScaler
+from sklearn.ensemble import RandomForestRegressor
 
 warnings.filterwarnings("ignore")
 
 # データの読み込み
-path = "~/titanic_ws/84.9/data/"
+path = "~/titanic_ws/copy_model/data/"
 train = pd.read_csv(path + "train.csv")
 test = pd.read_csv(path + "test.csv")
 
@@ -77,8 +79,11 @@ data["Title"] = data["Title"].map(
 # 欠損値を '0' に変換
 data["Title"].fillna(0, inplace=True)
 
-# 'Fare' の欠損値を中央値で補完
-data["Fare"].fillna(data["Fare"].median(), inplace=True)
+# 欠損値を Embarked='S', Pclass=3 の平均値で補完
+fare = data.loc[
+    (data["Embarked"] == "S") & (data["Pclass"] == 3), "Fare"
+].median()
+data["Fare"] = data["Fare"].fillna(fare)
 
 # 'Fare'を標準化
 sc = StandardScaler()
@@ -108,24 +113,17 @@ for grp, grp_df in data.groupby(["Last_name", "Fare"]):
             # 生存者がいない(NaNも含む) → 0
             # 全員NaN → 0.5
 
-# チケット番号でグルーピング
-for grp, grp_df in data.groupby("Ticket"):
-    if len(grp_df) != 1:
-        # チケット番号が同じ人が2人以上いる場合
-        # グループ内で1人でも生存者がいれば'Family_survival'を1にする
-        for ind, row in grp_df.iterrows():
-            if (row["Family_survival"] == 0) | (row["Family_survival"] == 0.5):
-                smax = grp_df.drop(ind)["Perished"].max()
-                smin = grp_df.drop(ind)["Perished"].min()
-                passID = row["PassengerId"]
-                if smax == 1.0:
-                    data.loc[
-                        data["PassengerId"] == passID, "Family_survival"
-                    ] = 1
-                elif smin == 0.0:
-                    data.loc[
-                        data["PassengerId"] == passID, "Family_survival"
-                    ] = 0
+Ticket_Count = dict(data["Ticket"].value_counts())
+data["TicketGroup"] = data["Ticket"].map(Ticket_Count)
+data.loc[
+    (data["TicketGroup"] >= 2) & (data["TicketGroup"] <= 4), "Ticket_label"
+] = 2
+data.loc[
+    (data["TicketGroup"] >= 5) & (data["TicketGroup"] <= 8)
+    | (data["TicketGroup"] == 1),
+    "Ticket_label",
+] = 1
+data.loc[(data["TicketGroup"] >= 11), "Ticket_label"] = 0
 
 # Family_sizeの作成
 data["Family_size"] = data["SibSp"] + data["Parch"] + 1
@@ -140,48 +138,86 @@ data.loc[
 data.loc[(data["Family_size"] >= 8), "Family_size_bin"] = 3
 
 
-# 特徴量を選択
-features_ = [
-    "Pclass",
-    "Embarked",
-    "SibSp",
-    "Parch",
-    "Title",
-    "Family_size",
-]
+# Age を Pclass, Sex, Parch, SibSp からランダムフォレストで推定
+# 推定に使用する項目を指定
+age_df = data[["Age", "Pclass", "Sex", "Parch", "SibSp"]]
 
-# MICE補完の設定
-imputer = IterativeImputer(
-    random_state=42, max_iter=20, min_value=0, max_value=80
+# ラベル特徴量をワンホットエンコーディング
+age_df = pd.get_dummies(age_df)
+
+# 学習データとテストデータに分離し、numpyに変換
+known_age = age_df[age_df.Age.notnull()].values
+unknown_age = age_df[age_df.Age.isnull()].values
+
+# 学習データをX, yに分離
+X = known_age[:, 1:]
+y = known_age[:, 0]
+
+# ランダムフォレストで推定モデルを構築
+rfr = RandomForestRegressor(random_state=0, n_estimators=100, n_jobs=-1)
+rfr.fit(X, y)
+
+# 推定モデルを使って、テストデータのAgeを予測し、補完
+predictedAges = rfr.predict(unknown_age[:, 1::])
+data.loc[(data.Age.isnull()), "Age"] = predictedAges
+
+# dead list, survie list
+# NameからSurname(苗字)を抽出
+data["Surname"] = data["Name"].map(lambda name: name.split(",")[0].strip())
+
+# 同じSurname(苗字)の出現頻度をカウント(出現回数が2以上なら家族)
+data["FamilyGroup"] = data["Surname"].map(data["Surname"].value_counts())
+
+# 家族で16才以下または女性の生存率
+Female_Child_Group = data.loc[
+    (data["FamilyGroup"] >= 2)
+    & ((data["Age"] <= 16) | (data["Sex"] == "female"))
+]
+Female_Child_Group = Female_Child_Group.groupby("Surname")["Perished"].mean()
+# 家族で16才超えかつ男性の生存率
+Male_Adult_Group = data.loc[
+    (data["FamilyGroup"] >= 2) & (data["Age"] > 16) & (data["Sex"] == "male")
+]
+Male_Adult_List = Male_Adult_Group.groupby("Surname")["Perished"].mean()
+
+# デッドリストとサバイブリストの作成
+Dead_list = set(
+    Female_Child_Group[Female_Child_Group.apply(lambda x: x == 1)].index
+)
+Survived_list = set(
+    Male_Adult_List[Male_Adult_List.apply(lambda x: x == 0)].index
 )
 
-# 欠損値補完の実行
-data["Age"] = imputer.fit_transform(
-    np.hstack((data[features_], np.expand_dims(data["Age"], axis=1)))
-)[:, -1]
-
-# 補完後の年齢の統計量を確認
-print("補完後の年齢の統計量 (data):")
-print(data["Age"].describe())
-
-# 負の年齢があるかを確認
-negative_ages_data = data[data["Age"] < 0]
-if not negative_ages_data.empty:
-    print(f"負の年齢が {len(negative_ages_data)} 件あります。")
-    # 負の値を持つ行のインデックス
-    neg_idx_data = negative_ages_data.index
-    # 年齢を再補完（負の値を0歳に設定し、再補完）
-    data.loc[neg_idx_data, "Age"] = np.nan
-    data["Age"] = imputer.fit_transform(
-        np.hstack((data[features_], np.expand_dims(data["Age"], axis=1)))
-    )[:, -1]
-    print("再補完後の年齢の統計量 (data):")
-    print(data["Age"].describe())
+# データをprefxデータに複製
+prefix = data.copy()
+# prefixデータのPerishedをすべて-1に置換
+prefix["Perished"] = -1
+# prefixデータでデッドリストとサバイブリストの該当者の'perished'を0, 1に置換
+prefix.loc[
+    (prefix["Perished"].isnull())
+    & (prefix["Surname"].apply(lambda x: x in Dead_list)),
+    ["Perished"],
+] = 0
+prefix.loc[
+    (prefix["Perished"].isnull())
+    & (prefix["Surname"].apply(lambda x: x in Survived_list)),
+    ["Perished"],
+] = 1
+# prefixデータからPassengerIdとPerishedを取得
+prefix = prefix[["PassengerId", "Perished"]]
 
 # ダミー変数化
 data = pd.get_dummies(
     data=data,
-    columns=["Title", "Pclass", "Family_survival", "Cabin", "Embarked"],
+    columns=[
+        "Title",
+        "Pclass",
+        "Family_survival",
+        "Cabin",
+        "Embarked",
+        "Ticket_label",
+        "Family_size_bin",
+    ],
 )
 
 # 訓練データと本番データに再分割
@@ -192,14 +228,24 @@ test = data.iloc[len(train) :].reset_index(drop=True)
 features = [
     col
     for col in train.columns
-    if col.startswith(("Pclass_", "Title_", "Family_survival_", "Cabin_"))
-] + ["Sex", "SibSp", "Parch", "Family_size"]
+    if col.startswith(
+        (
+            "Pclass_",
+            "Title_",
+            # "Family_survival_",
+            "Cabin_",
+            "Embarked_",
+            "Ticket_label_",
+            "Family_size_bin_",
+        )
+    )
+] + ["Sex", "Fare_std", "Age"]
 
 # 特徴量を取得
-X = train[features + ["Age"]]
-Y = test[features + ["Age"]]
+X = train[features]
+Y = test[features]
 
-# 標準化
+# # 標準化
 # scaler = StandardScaler()
 # X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
 # Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
@@ -216,5 +262,7 @@ Y["PassengerId"] = test["PassengerId"]
 
 
 # csvファイルに保存
-X.to_csv("./84.9/fixed_data/X.csv", index=False)
-Y.to_csv("./84.9/fixed_data/Y.csv", index=False)
+X.to_csv("./copy_model/fixed_data/X.csv", index=False)
+Y.to_csv("./copy_model/fixed_data/Y.csv", index=False)
+# prefixデータをcsvファイルに保存
+prefix.to_csv("./copy_model/fixed_data/prefix.csv", index=False)
