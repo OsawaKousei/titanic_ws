@@ -1,27 +1,11 @@
-import os
 import warnings
 
 import numpy as np
 import pandas as pd
-
-# pytorch
-import torch
 from fancyimpute import IterativeImputer
 from sklearn.discriminant_analysis import StandardScaler
 
 warnings.filterwarnings("ignore")
-
-
-# 乱数を固定する関数
-def reset_seed(seed: int) -> None:
-    os.environ["PYTHONHASHSEED"] = "0"
-    # pytorchのシードを固定
-    torch.manual_seed(seed)
-
-
-# 乱数を固定
-reset_seed(1145141919810)
-
 
 # データの読み込み
 path = "~/titanic_ws/titanic_detailed/data/"
@@ -111,6 +95,10 @@ data["Embarked"].fillna(data["Embarked"].mode()[0], inplace=True)
 data["Ticket"] = data["Ticket"].str.extract("(\d+)", expand=False)
 data["Ticket"].fillna(data["Ticket"].mode()[0], inplace=True)
 
+# 'ticket' を標準化
+sc = StandardScaler()
+data["Ticket"] = sc.fit_transform(data[["Ticket"]])
+
 # 'Sex' と 'Embarked' のカテゴリカル特徴量を数値に変換
 data["Sex"] = data["Sex"].map({"male": 0, "female": 1})
 data["Embarked"] = data["Embarked"].map({"S": 0, "C": 1, "Q": 2})
@@ -148,6 +136,7 @@ data["Fare"].fillna(data["Fare"].median(), inplace=True)
 # 'Fare'を標準化
 sc = StandardScaler()
 data["Fare_std"] = sc.fit_transform(data[["Fare"]])
+
 
 # 特徴量を選択
 features_ = [
@@ -198,7 +187,7 @@ data = pd.get_dummies(
     columns=["Title", "Pclass", "Family_survival", "Cabin", "Embarked"],
 )
 
-# trainとtestに再分割
+# 訓練データと本番データに再分割
 train = data.iloc[: len(train)]
 test = data.iloc[len(train) :].reset_index(drop=True)
 
@@ -211,14 +200,19 @@ features = [
     )
 ] + ["Sex", "SibSp", "Parch", "Ticket", "Family_size", "Fare_std"]
 
-# 特徴量と目的変数に分割
+# 特徴量を取得
 X = train[features + ["Age"]]
 Y = test[features + ["Age"]]
 
 # 標準化
-scaler = StandardScaler()
-X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
-Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
+# scaler = StandardScaler()
+# X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
+# Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
+
+# 特徴量をfloat型に変換
+X = X.astype("float")
+Y = Y.astype("float")
+
 # xにPerishedとPassengerIdを追加
 X["Perished"] = train["Perished"]
 X["PassengerId"] = train["PassengerId"]
