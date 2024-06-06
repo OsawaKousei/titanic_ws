@@ -144,8 +144,6 @@ for i in range(len(y_test)):
     if y_test.iloc[i, 0] == pred.iloc[i, 0]:
         accuracy += 1
 accuracy /= len(y_test)
-# 小数第3位まで表示
-accuracy = round(accuracy, 3)
 # 正解率を表示
 print("accuracy: ", accuracy)
 
