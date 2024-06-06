@@ -181,6 +181,8 @@ Female_Child_Group = prefix.loc[
     & ((prefix["Age"] <= 16) | (prefix["Sex"] == "female"))
 ]
 Female_Child_Group = Female_Child_Group.groupby("Surname")["Perished"].mean()
+print("FC")
+print(Female_Child_Group)
 # 家族で16才超えかつ男性の生存率
 Male_Adult_Group = prefix.loc[
     (prefix["FamilyGroup"] >= 2)
@@ -188,6 +190,8 @@ Male_Adult_Group = prefix.loc[
     & (prefix["Sex"] == "male")
 ]
 Male_Adult_List = Male_Adult_Group.groupby("Surname")["Perished"].mean()
+print("MA")
+print(Male_Adult_List)
 
 # デッドリストとサバイブリストの作成
 Dead_list = set(

@@ -71,6 +71,8 @@ dtest = xgb.DMatrix(
     X_test, label=y_test, feature_names=X_test.columns.to_list()
 )
 
+dpred = xgb.DMatrix(X_pred, feature_names=X_pred.columns.to_list())
+
 # 先にxgb_paramsとしてパラメータを設定しておきます
 xgb_params = {  # 目的関数
     "objective": "reg:squarederror",
@@ -118,6 +120,17 @@ y_test.columns = ["Perished"]
 pred.to_csv("pred.csv", index=False)
 y_test.to_csv("y_test.csv", index=False)
 
+# 正解率を計算
+accuracy = 0.0
+for i in range(len(y_test)):
+    if y_test.iloc[i, 0] == pred.iloc[i, 0]:
+        accuracy += 1
+accuracy /= len(y_test)
+# 小数第3位まで表示
+accuracy = round(accuracy, 3)
+# 正解率を表示
+print("pre accuracy: ", accuracy)
+
 # # predの各行ごとに
 # for i in range(len(prefix)):
 #     # prefixのperishedが-1かどうかを判定
@@ -125,16 +138,12 @@ y_test.to_csv("y_test.csv", index=False)
 #         # prefixのPerishedが-1でない場合、predのi行目をprefixのPerishedに代入
 #         pred.loc[i, "Perished"] = prefix.loc[i, "Perished"]
 
-# # predのPerishedを表示
-# for i in range(len(pred)):
-#     print(f"Perished: {pred.loc[i, 'Perished']}")
-
-
 # 正解率を計算
-accuracy = (
-    pred["Perished"].reset_index(drop=True)
-    == y_test["Perished"].reset_index(drop=True)
-).sum() / len(y_test)
+accuracy = 0.0
+for i in range(len(y_test)):
+    if y_test.iloc[i, 0] == pred.iloc[i, 0]:
+        accuracy += 1
+accuracy /= len(y_test)
 # 小数第3位まで表示
 accuracy = round(accuracy, 3)
 # 正解率を表示
@@ -149,3 +158,16 @@ plt.legend()
 plt.xlabel("rounds")
 plt.ylabel("rmse")
 plt.show()
+
+# 予測
+pred = reg.predict(dpred)
+# 予測値が閾値を超えたら1, そうでなければ0にする
+pred = (pred > THRESHOLD).astype(int)
+# 予測値をDataFrameに変換
+pred = pd.DataFrame(pred)  # Convert pred to a DataFrame
+# predにPerishedという列名をつける
+pred.columns = ["Perished"]
+# PassengerIdと結合
+submission = pd.concat([PassengerId, pred], axis=1)
+# submissionを保存
+submission.to_csv("submission.csv", index=False)
