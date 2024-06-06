@@ -8,7 +8,7 @@ from sklearn.discriminant_analysis import StandardScaler
 warnings.filterwarnings("ignore")
 
 # データの読み込み
-path = "~/titanic_ws/titanic_simplenet/data/"
+path = "~/titanic_ws/data_augmentation/data/"
 train = pd.read_csv(path + "train.csv")
 test = pd.read_csv(path + "test.csv")
 
@@ -200,9 +200,9 @@ X = train[features + ["Age"]]
 Y = test[features + ["Age"]]
 
 # 標準化
-# scaler = StandardScaler()
-# X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
-# Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
+scaler = StandardScaler()
+X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
+Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
 
 # 特徴量をfloat型に変換
 X = X.astype("float")
@@ -216,5 +216,5 @@ Y["PassengerId"] = test["PassengerId"]
 
 
 # csvファイルに保存
-X.to_csv("./titanic_simplenet/fixed_data/X.csv", index=False)
-Y.to_csv("./titanic_simplenet/fixed_data/Y.csv", index=False)
+X.to_csv("./data_augmentation/fixed_data/X.csv", index=False)
+Y.to_csv("./data_augmentation/fixed_data/Y.csv", index=False)

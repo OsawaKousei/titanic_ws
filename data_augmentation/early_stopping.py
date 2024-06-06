@@ -38,5 +38,5 @@ class EarlyStopping:
             print(
                 f"Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ..."
             )
-        torch.save(model.state_dict(), "./titanic_simplenet/models/model.pth")
+        torch.save(model.state_dict(), "./data_augmentation/models/model.pth")
         self.val_loss_min = val_loss

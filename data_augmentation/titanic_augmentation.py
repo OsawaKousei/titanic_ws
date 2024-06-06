@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from early_stopping import EarlyStopping
+from mixup import mixup
 from simple_model import Net
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
@@ -31,7 +32,7 @@ def reset_seed(seed: int) -> None:
 reset_seed(622)
 
 # データの読み込み
-path = "./titanic_simplenet/fixed_data/"
+path = "./data_augmentation/fixed_data/"
 TRAIN = pd.read_csv(path + "X.csv")
 PRED = pd.read_csv(path + "Y.csv")
 
@@ -52,6 +53,19 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, Y, test_size=0.2, random_state=42
 )
 
+# ハイパーパラメータの設定
+BATCH_SIZE = 100
+WEIGHT_DECAY = 0.01
+LEARNING_RATE = 0.0001
+EPOCH = 300
+DROPOUT = 0.001
+THRESHOLD = 0.5
+PATIENCE = 1000  # 早期終了のパラメータ
+MIX_ALPHA = 0.1  # mixupのalpha
+
+# 訓練データを水増し
+X_train, y_train = mixup(X_train, y_train, alpha=MIX_ALPHA)
+
 # データの形状を確認
 print("X_train_scaled.shape: ", X_train.shape)
 print("X_test_scaled.shape: ", X_test.shape)
@@ -59,14 +73,6 @@ print("y_train.shape: ", y_train.shape)
 print("y_test.shape: ", y_test.shape)
 print("X_pred.shape: ", X_pred.shape)
 
-# ハイパーパラメータの設定
-BATCH_SIZE = 100
-WEIGHT_DECAY = 0.05
-LEARNING_RATE = 0.0001
-EPOCH = 500
-DROPOUT = 0.005
-THRESHOLD = 0.5
-PATIENCE = 1000  # 早期終了のパラメータ
 
 # データをpytorchのtensorに変換
 X_train = torch.tensor(X_train.values, dtype=torch.float32)
@@ -166,7 +172,7 @@ for epoch in range(EPOCH):
     if earlystopping.early_stop:
         print("Early stopping")
         # ハイパーパラメータをtxtファイルに保存
-        with open("./titanic_simplenet/params/hyperparameter.txt", "w") as f:
+        with open("./data_augmentation/params/hyperparameter.txt", "w") as f:
             f.write(
                 f"batch_size: {BATCH_SIZE}\n"
                 f"weight_decay: {WEIGHT_DECAY}\n"
@@ -184,7 +190,7 @@ accuracy_maen = round(accuracy_maen, 3)
 print("accuracy_maen: ", accuracy_maen)
 
 # ハイパーパラメータをtxtファイルに保存
-with open("./titanic_simplenet/params/hyperparameter.txt", "w") as f:
+with open("./data_augmentation/params/hyperparameter.txt", "w") as f:
     f.write(
         f"batch_size: {BATCH_SIZE}\n"
         f"weight_decay: {WEIGHT_DECAY}\n"
@@ -216,7 +222,7 @@ plt.text(
     va="center",
     color="r",
 )
-plt.savefig("./titanic_simplenet/graphs/accuracy_image.png")
+plt.savefig("./data_augmentation/graphs/accuracy_image.png")
 plt.show()
 
 # モデルで予測
@@ -232,4 +238,4 @@ for inputs, _ in predloader:
 y_pred = pd.DataFrame(y_pred, columns=["Perished"])
 y_pred = pd.concat([PassengerId, y_pred], axis=1)
 # 予測結果をcsvファイルに保存
-y_pred.to_csv("./titanic_simplenet/predictions/submission.csv", index=True)  # type: ignore
+y_pred.to_csv("./data_augmentation/predictions/submission.csv", index=True)  # type: ignore
