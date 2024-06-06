@@ -8,7 +8,7 @@ from sklearn.discriminant_analysis import StandardScaler
 warnings.filterwarnings("ignore")
 
 # データの読み込み
-path = "~/titanic_ws/titanic_detailed/data/"
+path = "~/titanic_ws/titanic_simplenet/data/"
 train = pd.read_csv(path + "train.csv")
 test = pd.read_csv(path + "test.csv")
 
@@ -216,5 +216,5 @@ Y["PassengerId"] = test["PassengerId"]
 
 
 # csvファイルに保存
-X.to_csv("./titanic_detailed/fixed_data/X.csv", index=False)
-Y.to_csv("./titanic_detailed/fixed_data/Y.csv", index=False)
+X.to_csv("./titanic_simplenet/fixed_data/X.csv", index=False)
+Y.to_csv("./titanic_simplenet/fixed_data/Y.csv", index=False)

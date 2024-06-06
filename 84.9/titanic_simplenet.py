@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from early_stopping import EarlyStopping
-from model import Net
+from simple_model import Net
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -31,7 +31,7 @@ def reset_seed(seed: int) -> None:
 reset_seed(622)
 
 # データの読み込み
-path = "./titanic_detailed/fixed_data/"
+path = "./titanic_simplenet/fixed_data/"
 TRAIN = pd.read_csv(path + "X.csv")
 PRED = pd.read_csv(path + "Y.csv")
 
@@ -61,10 +61,10 @@ print("X_pred.shape: ", X_pred.shape)
 
 # ハイパーパラメータの設定
 BATCH_SIZE = 100
-WEIGHT_DECAY = 0.001
-LEARNING_RATE = 0.00001
-EPOCH = 1000
-DROPOUT = 0.001
+WEIGHT_DECAY = 0.05
+LEARNING_RATE = 0.0001
+EPOCH = 500
+DROPOUT = 0.005
 THRESHOLD = 0.5
 PATIENCE = 1000  # 早期終了のパラメータ
 
@@ -166,7 +166,7 @@ for epoch in range(EPOCH):
     if earlystopping.early_stop:
         print("Early stopping")
         # ハイパーパラメータをtxtファイルに保存
-        with open("./titanic_detailed/params/hyperparameter.txt", "w") as f:
+        with open("./titanic_simplenet/params/hyperparameter.txt", "w") as f:
             f.write(
                 f"batch_size: {BATCH_SIZE}\n"
                 f"weight_decay: {WEIGHT_DECAY}\n"
@@ -184,7 +184,7 @@ accuracy_maen = round(accuracy_maen, 3)
 print("accuracy_maen: ", accuracy_maen)
 
 # ハイパーパラメータをtxtファイルに保存
-with open("./titanic_detailed/params/hyperparameter.txt", "w") as f:
+with open("./titanic_simplenet/params/hyperparameter.txt", "w") as f:
     f.write(
         f"batch_size: {BATCH_SIZE}\n"
         f"weight_decay: {WEIGHT_DECAY}\n"
@@ -216,7 +216,7 @@ plt.text(
     va="center",
     color="r",
 )
-plt.savefig("./titanic_detailed/graphs/accuracy_image.png")
+plt.savefig("./titanic_simplenet/graphs/accuracy_image.png")
 plt.show()
 
 # モデルで予測
@@ -232,4 +232,4 @@ for inputs, _ in predloader:
 y_pred = pd.DataFrame(y_pred, columns=["Perished"])
 y_pred = pd.concat([PassengerId, y_pred], axis=1)
 # 予測結果をcsvファイルに保存
-y_pred.to_csv("./titanic_detailed/predictions/submission.csv", index=False)  # type: ignore
+y_pred.to_csv("./titanic_simplenet/predictions/submission.csv", index=True)  # type: ignore
