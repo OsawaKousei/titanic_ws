@@ -95,54 +95,6 @@ data["Fare"].fillna(data["Fare"].median(), inplace=True)
 sc = StandardScaler()
 data["Fare_std"] = sc.fit_transform(data[["Fare"]])
 
-# 特徴量を選択
-features_ = [
-    "Pclass",
-    "Sex",
-    "Embarked",
-    "SibSp",
-    "Parch",
-    "Title",
-    "Ticket",
-    "Family_survival",
-    "Family_size",
-    "Cabin",
-    "Fare_std",
-]
-
-# MICE補完の設定
-imputer = IterativeImputer(
-    random_state=42, max_iter=20, min_value=0, max_value=80
-)
-
-# 欠損値補完の実行
-data["Age"] = imputer.fit_transform(
-    np.hstack((data[features_], np.expand_dims(data["Age"], axis=1)))
-)[:, -1]
-
-# 補完後の年齢の統計量を確認
-print("補完後の年齢の統計量 (data):")
-print(data["Age"].describe())
-
-# 負の年齢があるかを確認
-negative_ages_data = data[data["Age"] < 0]
-if not negative_ages_data.empty:
-    print(f"負の年齢が {len(negative_ages_data)} 件あります。")
-    # 負の値を持つ行のインデックス
-    neg_idx_data = negative_ages_data.index
-    # 年齢を再補完（負の値を0歳に設定し、再補完）
-    data.loc[neg_idx_data, "Age"] = np.nan
-    data["Age"] = imputer.fit_transform(
-        np.hstack((data[features_], np.expand_dims(data["Age"], axis=1)))
-    )[:, -1]
-    print("再補完後の年齢の統計量 (data):")
-    print(data["Age"].describe())
-
-# ダミー変数化
-data = pd.get_dummies(
-    data=data,
-    columns=["Title", "Pclass", "Family_survival", "Cabin", "Embarked"],
-)
 # 'Family_size' と 'Family_survival' を追加
 # 名前の名字を取得して'Last_name'に入れる
 data["Last_name"] = data["Name"].apply(lambda x: x.split(",")[0])
@@ -198,6 +150,47 @@ data.loc[
 ] = 2
 data.loc[(data["Family_size"] >= 8), "Family_size_bin"] = 3
 
+# 特徴量を選択
+features_ = [
+    "Pclass",
+    "Parch",
+    "Title",
+    "Family_size",
+]
+
+# MICE補完の設定
+imputer = IterativeImputer(
+    random_state=42, max_iter=20, min_value=0, max_value=80
+)
+
+# 欠損値補完の実行
+data["Age"] = imputer.fit_transform(
+    np.hstack((data[features_], np.expand_dims(data["Age"], axis=1)))
+)[:, -1]
+
+# 補完後の年齢の統計量を確認
+print("補完後の年齢の統計量 (data):")
+print(data["Age"].describe())
+
+# 負の年齢があるかを確認
+negative_ages_data = data[data["Age"] < 0]
+if not negative_ages_data.empty:
+    print(f"負の年齢が {len(negative_ages_data)} 件あります。")
+    # 負の値を持つ行のインデックス
+    neg_idx_data = negative_ages_data.index
+    # 年齢を再補完（負の値を0歳に設定し、再補完）
+    data.loc[neg_idx_data, "Age"] = np.nan
+    data["Age"] = imputer.fit_transform(
+        np.hstack((data[features_], np.expand_dims(data["Age"], axis=1)))
+    )[:, -1]
+    print("再補完後の年齢の統計量 (data):")
+    print(data["Age"].describe())
+
+# ダミー変数化
+data = pd.get_dummies(
+    data=data,
+    columns=["Title", "Pclass", "Family_survival", "Cabin", "Embarked"],
+)
 
 # trainとtestに再分割
 train = data.iloc[: len(train)]
@@ -220,6 +213,8 @@ Y = test[features + ["Age"]]
 scaler = StandardScaler()
 X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
 Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
+
+
 # xにPerishedとPassengerIdを追加
 X["Perished"] = train["Perished"]
 X["PassengerId"] = train["PassengerId"]
