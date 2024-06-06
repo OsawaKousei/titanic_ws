@@ -200,9 +200,9 @@ X = train[features + ["Age"]]
 Y = test[features + ["Age"]]
 
 # 標準化
-scaler = StandardScaler()
-X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
-Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
+# scaler = StandardScaler()
+# X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
+# Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
 
 # 特徴量をfloat型に変換
 X = X.astype("float")

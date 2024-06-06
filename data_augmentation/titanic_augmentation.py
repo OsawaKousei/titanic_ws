@@ -55,16 +55,17 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # ハイパーパラメータの設定
 BATCH_SIZE = 100
-WEIGHT_DECAY = 0.01
+WEIGHT_DECAY = 0.05
 LEARNING_RATE = 0.0001
 EPOCH = 300
-DROPOUT = 0.001
+DROPOUT = 0.0005
 THRESHOLD = 0.5
 PATIENCE = 1000  # 早期終了のパラメータ
-MIX_ALPHA = 0.1  # mixupのalpha
+MIX_ALPHA = 0.05  # mixupのalpha
+MIX_NUM = 1  # mixupで増やすデータの数
 
 # 訓練データを水増し
-X_train, y_train = mixup(X_train, y_train, alpha=MIX_ALPHA)
+# X_train, y_train = mixup(X_train, y_train, alpha=MIX_ALPHA)
 
 # データの形状を確認
 print("X_train_scaled.shape: ", X_train.shape)
@@ -180,6 +181,8 @@ for epoch in range(EPOCH):
                 f"epoch: {epoch}\n"
                 f"dropout: {DROPOUT}\n"
                 f"threshold: {THRESHOLD}\n"
+                f"mix_alpha: {MIX_ALPHA}\n"
+                f"mix_num: {MIX_NUM}\n"
             )
         break
 
@@ -198,6 +201,8 @@ with open("./data_augmentation/params/hyperparameter.txt", "w") as f:
         f"epoch: {epoch}\n"
         f"dropout: {DROPOUT}\n"
         f"threshold: {THRESHOLD}\n"
+        f"mix_alpha: {MIX_ALPHA}\n"
+        f"mix_num: {MIX_NUM}\n"
     )
 
 plt.figure(figsize=(6, 6))  # グラフ描画用

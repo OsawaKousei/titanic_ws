@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def mixup(train_x, train_y, alpha=0.1):  # type: ignore
+def mixup(train_x, train_y, alpha=0.1, num=100):  # type: ignore
     # train_x,train_y:入力データとラベル
     # alpha:ベータ分布のパラメータ
 
@@ -16,12 +16,16 @@ def mixup(train_x, train_y, alpha=0.1):  # type: ignore
     # mix_x,mix_yをpandas.DataFrame型で初期化
     mix_x = []
     mix_y = []
+    count = 0
     for i in range(length):  # Changed variable name from 'l' to 'length'
         j = np.random.randint(
             length
         )  # Changed variable name from 'l' to 'length'
         mix_x.append(alpha * train_x[i] + (1 - alpha) * train_x[j])
         mix_y.append(alpha * train_y[i] + (1 - alpha) * train_y[j])
+        count += 1
+        if count == num:
+            break
 
     # mixと元のデータを結合
     mix_x = np.vstack([train_x, mix_x])
