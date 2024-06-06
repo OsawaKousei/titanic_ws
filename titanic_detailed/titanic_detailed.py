@@ -63,7 +63,7 @@ print("X_pred.shape: ", X_pred.shape)
 BATCH_SIZE = 100
 WEIGHT_DECAY = 0.1
 LEARNING_RATE = 0.0001
-EPOCH = 1000
+EPOCH = 725
 DROPOUT = 0.01
 THRESHOLD = 0.5
 PATIENCE = 1000  # 早期終了のパラメータ

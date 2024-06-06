@@ -66,7 +66,7 @@ LEARNING_RATE = 0.0001
 EPOCH = 1000
 DROPOUT = 0.01
 THRESHOLD = 0.5
-PATIENCE = 1000  # 早期終了のパラメータ
+PATIENCE = 100  # 早期終了のパラメータ
 
 # データをpytorchのtensorに変換
 X_train = torch.tensor(X_train.values, dtype=torch.float32)
