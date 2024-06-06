@@ -162,21 +162,30 @@ predictedAges = rfr.predict(unknown_age[:, 1::])
 data.loc[(data.Age.isnull()), "Age"] = predictedAges
 
 # dead list, survie list
+# データをprefxデータに複製
+prefix = data.copy()
 # NameからSurname(苗字)を抽出
-data["Surname"] = data["Name"].map(lambda name: name.split(",")[0].strip())
+prefix["Surname"] = prefix["Name"].map(lambda name: name.split(",")[0].strip())
 
 # 同じSurname(苗字)の出現頻度をカウント(出現回数が2以上なら家族)
-data["FamilyGroup"] = data["Surname"].map(data["Surname"].value_counts())
+prefix["FamilyGroup"] = prefix["Surname"].map(prefix["Surname"].value_counts())
+
+# prefixからPerishedが0か1以外のデータを削除
+prefix = prefix.drop(
+    prefix[(prefix["Perished"] != 0) & (prefix["Perished"] != 1)].index
+)
 
 # 家族で16才以下または女性の生存率
-Female_Child_Group = data.loc[
-    (data["FamilyGroup"] >= 2)
-    & ((data["Age"] <= 16) | (data["Sex"] == "female"))
+Female_Child_Group = prefix.loc[
+    (prefix["FamilyGroup"] >= 2)
+    & ((prefix["Age"] <= 16) | (prefix["Sex"] == "female"))
 ]
 Female_Child_Group = Female_Child_Group.groupby("Surname")["Perished"].mean()
 # 家族で16才超えかつ男性の生存率
-Male_Adult_Group = data.loc[
-    (data["FamilyGroup"] >= 2) & (data["Age"] > 16) & (data["Sex"] == "male")
+Male_Adult_Group = prefix.loc[
+    (prefix["FamilyGroup"] >= 2)
+    & (prefix["Age"] > 16)
+    & (prefix["Sex"] == "male")
 ]
 Male_Adult_List = Male_Adult_Group.groupby("Surname")["Perished"].mean()
 
@@ -190,8 +199,7 @@ Survived_list = set(
 )
 print(Survived_list)
 
-# データをprefxデータに複製
-prefix = data.copy()
+
 # prefixデータのPerishedをすべて-1に置換
 prefix["Perished"] = -1
 # prefixデータでデッドリストとサバイブリストの該当者の'perished'を0, 1に置換
