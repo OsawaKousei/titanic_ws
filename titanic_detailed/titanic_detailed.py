@@ -10,8 +10,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from deep_model import Net
 from early_stopping import EarlyStopping
-from model import Net
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -50,10 +50,10 @@ print("y_test.shape: ", y_test.shape)
 BATCH_SIZE = 100
 WEIGHT_DECAY = 0.5
 LEARNING_RATE = 0.0001
-EPOCH = 500
+EPOCH = 1000
 DROPOUT = 0.1
 THRESHOLD = 0.5
-PATIENCE = 300  # 早期終了のパラメータ
+PATIENCE = 1000  # 早期終了のパラメータ
 
 # データをpytorchのtensorに変換
 X_train = torch.tensor(X_train.values, dtype=torch.float32)

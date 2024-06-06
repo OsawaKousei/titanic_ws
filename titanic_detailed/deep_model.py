@@ -78,6 +78,24 @@ class Net(nn.Module):
         nn.init.kaiming_normal_(
             self.fc10.weight, mode="fan_out", nonlinearity="relu"
         )
+        nn.init.kaiming_normal_(
+            self.fc11.weight, mode="fan_out", nonlinearity="relu"
+        )
+        nn.init.kaiming_normal_(
+            self.fc12.weight, mode="fan_out", nonlinearity="relu"
+        )
+        nn.init.kaiming_normal_(
+            self.fc13.weight, mode="fan_out", nonlinearity="relu"
+        )
+        nn.init.kaiming_normal_(
+            self.fc14.weight, mode="fan_out", nonlinearity="relu"
+        )
+        nn.init.kaiming_normal_(
+            self.fc15.weight, mode="fan_out", nonlinearity="relu"
+        )
+        nn.init.kaiming_normal_(
+            self.fc16.weight, mode="fan_out", nonlinearity="relu"
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.relu(self.bn1(self.fc1(x)))
@@ -98,5 +116,17 @@ class Net(nn.Module):
         x = self.dropout(x)
         x = self.relu(self.bn9(self.fc9(x)))
         x = self.dropout(x)
-        x = self.fc10(x)
+        x = self.relu(self.bn10(self.fc10(x)))
+        x = self.dropout(x)
+        x = self.relu(self.bn11(self.fc11(x)))
+        x = self.dropout(x)
+        x = self.relu(self.bn12(self.fc12(x)))
+        x = self.dropout(x)
+        x = self.relu(self.bn13(self.fc13(x)))
+        x = self.dropout(x)
+        x = self.relu(self.bn14(self.fc14(x)))
+        x = self.dropout(x)
+        x = self.relu(self.bn15(self.fc15(x)))
+        x = self.dropout(x)
+        x = self.fc16(x)
         return x
