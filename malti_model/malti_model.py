@@ -79,7 +79,7 @@ MAX_DEPTH = 6
 
 
 # 採用する特徴量を25個から20個に絞り込む
-# select = SelectKBest(k=25)
+select = SelectKBest(k=25)
 
 param_grid = {
     "criterion": ["gini", "entropy"],
@@ -135,15 +135,15 @@ est3 = HistGradientBoostingClassifier(
 )
 
 
-# クラス所属確率から予測(voting='soft'), 重みを設定(ロジスティック回帰を重視する)
+# クラス所属確率から予測(voting='soft'), 重みを設定
 vc3 = VotingClassifier(
     estimators=[("lr", est1), ("rf", est2), ("knn", est3)],
     voting="soft",
     flatten_transform=True,
-    weights=[2, 1.0, 2],
+    weights=[1.0, 0.0, 1.0],
 )
 
-pipeline = make_pipeline(vc3)
+pipeline = make_pipeline(select, vc3)
 pipeline.fit(X_train, y_train)
 
 # --------　採用した特徴量 ---------------
