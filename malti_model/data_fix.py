@@ -89,6 +89,9 @@ data["Fare"] = data["Fare"].fillna(fare)
 sc = StandardScaler()
 data["Fare_std"] = sc.fit_transform(data[["Fare"]])
 
+# Faer_stdの欠損値を平均値で補完
+data["Fare_std"].fillna(data["Fare_std"].mean(), inplace=True)
+
 # 'Family_size' と 'Family_survival' を追加
 # 名前の名字を取得して'Last_name'に入れる
 data["Last_name"] = data["Name"].apply(lambda x: x.split(",")[0])
@@ -246,8 +249,8 @@ features = [
     "Sex",
     "Fare_std",
     "Age",
-    "Parch",
-    "SibSp",
+    # "Parch",
+    # "SibSp",
 ]
 
 # 特徴量を取得

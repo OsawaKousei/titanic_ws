@@ -7,7 +7,8 @@ import pandas as pd
 import xgboost as xgb
 from filer import filter
 from mixup import mixup
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.feature_selection import SelectKBest
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.metrics import mean_squared_error
@@ -16,6 +17,7 @@ from sklearn.model_selection import (
     cross_validate,
     train_test_split,
 )
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.svm import SVC, LinearSVC
 from xgboost import callback
@@ -93,25 +95,41 @@ param_grid = {
 # # parameterをtxtファイルに保存
 # filter.save_dict(grid.best_params_, "./malti_model/params/params.txt")
 
-clf = RandomForestClassifier(
-    random_state=10,
-    warm_start=True,  # 既にフィットしたモデルに学習を追加
-    n_estimators=26,
-    max_depth=6,
-    max_features="sqrt",
-)
-# pipeline = make_pipeline(select, clf)
-pipeline = make_pipeline(clf)
-pipeline.fit(X_train, y_train)
-
-# pipeline = make_pipeline(select, grid.best_estimator_)
+# clf = RandomForestClassifier(
+#     random_state=10,
+#     warm_start=True,  # 既にフィットしたモデルに学習を追加
+#     n_estimators=26,
+#     max_depth=6,
+#     max_features="sqrt",
+# )
+# # pipeline = make_pipeline(select, clf)
+# pipeline = make_pipeline(clf)
 # pipeline.fit(X_train, y_train)
 
+# # pipeline = make_pipeline(select, grid.best_estimator_)
+# # pipeline.fit(X_train, y_train)
 
-# フィット結果の表示
-cv_result = cross_validate(pipeline, X_train, y_train, cv=10)
-print("mean_score = ", np.mean(cv_result["test_score"]))
-print("mean_std = ", np.std(cv_result["test_score"]))
+
+# # フィット結果の表示
+# cv_result = cross_validate(pipeline, X_train, y_train, cv=10)
+# print("mean_score = ", np.mean(cv_result["test_score"]))
+# print("mean_std = ", np.std(cv_result["test_score"]))
+
+est1 = CalibratedClassifierCV()
+est2 = RandomForestClassifier(random_state=1)
+est3 = LogisticRegression(random_state=1)
+
+
+# クラス所属確率から予測(voting='soft'), 重みを設定(ロジスティック回帰を重視する)
+vc3 = VotingClassifier(
+    estimators=[("lr", est1), ("rf", est2), ("knn", est3)],
+    voting="soft",
+    flatten_transform=True,
+    weights=[1, 10, 1],
+)
+
+pipeline = make_pipeline(vc3)
+pipeline.fit(X_train, y_train)
 
 # --------　採用した特徴量 ---------------
 # 採用の可否状況
@@ -144,6 +162,10 @@ for i in range(len(y_test)):
 accuracy /= len(y_test)
 # 正解率を表示
 print("accuracy: ", accuracy)
+
+# x_predをcsvファイルに保存
+X_pred = pd.DataFrame(X_pred)
+X_pred.to_csv("./malti_model/predictions/X_pred.csv", index=False)
 
 # 予測
 pred = pipeline.predict(X_pred)
