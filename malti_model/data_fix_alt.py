@@ -233,17 +233,17 @@ Survived_list = set(
 print(Survived_list)
 
 
-# # デッドリストとサバイブリストをSex, Age, Title に反映させる
-# data.loc[
-#     (data["Perished"].isnull())
-#     & (data["Surname"].apply(lambda x: x in Dead_list)),
-#     ["Sex", "Age", "Title"],
-# ] = [0, 28.0, 0]
-# data.loc[
-#     (data["Perished"].isnull())
-#     & (data["Surname"].apply(lambda x: x in Survived_list)),
-#     ["Sex", "Age", "Title"],
-# ] = [1, 5.0, 1]
+# デッドリストとサバイブリストをSex, Age, Title に反映させる
+data.loc[
+    (data["Perished"].isnull())
+    & (data["Surname"].apply(lambda x: x in Dead_list)),
+    ["Sex", "Age", "Title"],
+] = [0, 28.0, 0]
+data.loc[
+    (data["Perished"].isnull())
+    & (data["Surname"].apply(lambda x: x in Survived_list)),
+    ["Sex", "Age", "Title"],
+] = [1, 5.0, 1]
 
 # ダミー変数化
 data = pd.get_dummies(
@@ -274,7 +274,7 @@ features = [
             "Family_survival_",
             "Cabin_",
             "Embarked_",
-            "Ticket_label_",
+            # "Ticket_label_",
             "Family_size_bin_",
         )
     )
