@@ -104,26 +104,9 @@ y_test = pd.DataFrame(y_test)
 y_test.columns = ["test"]
 
 # predとy_testを保存
-pred.to_csv("pred.csv", index=False)
-y_test.to_csv("y_test.csv", index=False)
+# pred.to_csv("pred.csv", index=False)
+# y_test.to_csv("y_test.csv", index=False)
 
-# 正解率を計算
-accuracy = 0.0
-for i in range(len(y_test)):
-    if y_test.iloc[i, 0] == pred.iloc[i, 0]:
-        accuracy += 1
-accuracy /= len(y_test)
-# 小数第3位まで表示
-accuracy = round(accuracy, 3)
-# 正解率を表示
-print("pre accuracy: ", accuracy)
-
-# # predの各行ごとに
-# for i in range(len(prefix)):
-#     # prefixのperishedが-1かどうかを判定
-#     if not prefix.loc[i, "Perished"] == -1:
-#         # prefixのPerishedが-1でない場合、predのi行目をprefixのPerishedに代入
-#         pred.loc[i, "Perished"] = prefix.loc[i, "Perished"]
 
 # 正解率を計算
 accuracy = 0.0
@@ -140,13 +123,3 @@ plt.show()
 # gainの場合
 xgb.plot_importance(reg, importance_type="gain")
 plt.show()
-
-# # trainデータに対してのloss推移をplot
-# plt.plot(evals_result["train"]["rmse"], label="train rmse")
-# # testデータに対してのloss推移をplot
-# plt.plot(evals_result["eval"]["rmse"], label="eval rmse")
-# plt.grid()
-# plt.legend()
-# plt.xlabel("rounds")
-# plt.ylabel("rmse")
-# plt.show()

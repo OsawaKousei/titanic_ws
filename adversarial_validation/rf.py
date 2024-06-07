@@ -141,26 +141,8 @@ clf = RandomForestClassifier(
     max_features="sqrt",
 )
 
-est1 = GradientBoostingClassifier(n_estimators=100, random_state=1)
-est2 = clf
-est3 = HistGradientBoostingClassifier(
-    max_iter=100, random_state=1, max_leaf_nodes=50
-)
 
-
-# クラス所属確率から予測(voting='soft'), 重みを設定
-vc3 = VotingClassifier(
-    estimators=[("lr", est1), ("rf", est2), ("knn", est3)],
-    voting="soft",
-    flatten_transform=True,
-    weights=[
-        1.0,
-        0.0,
-        1.0,
-    ],  # randomforestを全く使わないほうが精度が高かったため、重みを0に設定
-)
-
-pipeline = make_pipeline(select, vc3)
+pipeline = make_pipeline(select, clf)
 pipeline.fit(X_train, y_train)
 
 
