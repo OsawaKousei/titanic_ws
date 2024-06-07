@@ -8,7 +8,12 @@ import xgboost as xgb
 from filer import filter
 from mixup import mixup
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier
+from sklearn.ensemble import (
+    GradientBoostingClassifier,
+    HistGradientBoostingClassifier,
+    RandomForestClassifier,
+    VotingClassifier,
+)
 from sklearn.feature_selection import SelectKBest
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.metrics import mean_squared_error
@@ -65,7 +70,7 @@ print("y_test.shape: ", y_test.shape)
 print("X_pred.shape: ", X_pred.shape)
 
 # ハイパーパラメータの設定
-THRESHOLD = 0.4
+THRESHOLD = 0.5
 LEARNING_RATE = 0.1
 MAX_DEPTH = 6
 
@@ -115,9 +120,19 @@ param_grid = {
 # print("mean_score = ", np.mean(cv_result["test_score"]))
 # print("mean_std = ", np.std(cv_result["test_score"]))
 
-est1 = CalibratedClassifierCV()
-est2 = RandomForestClassifier(random_state=1)
-est3 = LogisticRegression(random_state=1)
+clf = RandomForestClassifier(
+    random_state=10,
+    warm_start=True,  # 既にフィットしたモデルに学習を追加
+    n_estimators=26,
+    max_depth=6,
+    max_features="sqrt",
+)
+
+est1 = GradientBoostingClassifier(n_estimators=100, random_state=1)
+est2 = clf
+est3 = HistGradientBoostingClassifier(
+    max_iter=100, random_state=1, max_leaf_nodes=31
+)
 
 
 # クラス所属確率から予測(voting='soft'), 重みを設定(ロジスティック回帰を重視する)
@@ -125,7 +140,7 @@ vc3 = VotingClassifier(
     estimators=[("lr", est1), ("rf", est2), ("knn", est3)],
     voting="soft",
     flatten_transform=True,
-    weights=[1, 10, 1],
+    weights=[1, 1, 1],
 )
 
 pipeline = make_pipeline(vc3)
@@ -148,6 +163,10 @@ pipeline.fit(X_train, y_train)
 
 # testデータに対しての予測
 test_pred = pipeline.predict(X_test)
+
+# test_predをcsvファイルに保存
+test_pred = pd.DataFrame(test_pred)
+test_pred.to_csv("./malti_model/predictions/test_pred.csv", index=False)
 # test_predをDataFrameに変換
 test_pred = pd.DataFrame(test_pred)
 # 閾値を超えたら1, そうでなければ0にする

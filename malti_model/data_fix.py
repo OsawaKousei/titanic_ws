@@ -240,17 +240,18 @@ features = [
             "Title_",
             "Family_survival_",
             "Cabin_",
-            "Embarked_",
-            "Ticket_label_",
-            "Family_size_bin_",
+            # "Embarked_",
+            # "Ticket_label_",
+            # "Family_size_bin_",
         )
     )
 ] + [
     "Sex",
     "Fare_std",
     "Age",
-    # "Parch",
-    # "SibSp",
+    "Parch",
+    "SibSp",
+    "Family_size",
 ]
 
 # 特徴量を取得
