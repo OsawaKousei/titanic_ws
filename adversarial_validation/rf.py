@@ -56,12 +56,14 @@ X = TRAIN.drop("Perished", axis=1)
 ## adversarial_validationにより、predとtrainで分布の異なる特徴量を削除
 ##
 
-# Xから"Familysize"と"Title_3.0"を削除
+# Xから"Familysize"と"Title_3.0"と"test"を削除
 X = X.drop("Family_size", axis=1)
 X = X.drop("Title_3.0", axis=1)
-# predから"Familysize"と"Title_3.0"を削除
+X = X.drop("test", axis=1)
+# predから"Familysize"と"Title_3.0"と"test"を削除
 PRED = PRED.drop("Family_size", axis=1)
 PRED = PRED.drop("Title_3.0", axis=1)
+PRED = PRED.drop("test", axis=1)
 
 # PREDからPassengerIdを取得
 PassengerId = PRED["PassengerId"]
