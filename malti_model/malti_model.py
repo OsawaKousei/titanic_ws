@@ -9,6 +9,7 @@ from filer import filter
 from mixup import mixup
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import (
     GridSearchCV,
@@ -16,6 +17,7 @@ from sklearn.model_selection import (
     train_test_split,
 )
 from sklearn.pipeline import make_pipeline
+from sklearn.svm import SVC, LinearSVC
 from xgboost import callback
 
 warnings.filterwarnings("ignore")
@@ -32,10 +34,9 @@ def reset_seed(seed: int) -> None:
 reset_seed(622)
 
 # データの読み込み
-path = "./copy_model/fixed_data/"
+path = "./malti_model/fixed_data/"
 TRAIN = pd.read_csv(path + "X.csv")
 PRED = pd.read_csv(path + "Y.csv")
-prefix = pd.read_csv(path + "prefix.csv")
 
 # TRAINからPassengerIdを切り捨て
 TRAIN = TRAIN.drop("PassengerId", axis=1)
@@ -71,7 +72,7 @@ MAX_DEPTH = 6
 
 
 # 採用する特徴量を25個から20個に絞り込む
-select = SelectKBest(k=25)
+# select = SelectKBest(k=25)
 
 param_grid = {
     "criterion": ["gini", "entropy"],
@@ -81,19 +82,30 @@ param_grid = {
     "bootstrap": [True, False],
 }
 
-grid = GridSearchCV(
-    estimator=RandomForestClassifier(random_state=1), param_grid=param_grid
+# grid = GridSearchCV(
+#     estimator=RandomForestClassifier(random_state=1), param_grid=param_grid
+# )
+# grid = grid.fit(X_train, y_train)
+
+# print(grid.best_score_)
+# print(grid.best_params_)
+
+# # parameterをtxtファイルに保存
+# filter.save_dict(grid.best_params_, "./malti_model/params/params.txt")
+
+clf = RandomForestClassifier(
+    random_state=10,
+    warm_start=True,  # 既にフィットしたモデルに学習を追加
+    n_estimators=26,
+    max_depth=6,
+    max_features="sqrt",
 )
-grid = grid.fit(X_train, y_train)
-
-print(grid.best_score_)
-print(grid.best_params_)
-
-# parameterをtxtファイルに保存
-filter.save_dict(grid.best_params_, "./copy_model/params/params.txt")
-
-pipeline = make_pipeline(select, grid.best_estimator_)
+# pipeline = make_pipeline(select, clf)
+pipeline = make_pipeline(clf)
 pipeline.fit(X_train, y_train)
+
+# pipeline = make_pipeline(select, grid.best_estimator_)
+# pipeline.fit(X_train, y_train)
 
 
 # フィット結果の表示
@@ -103,18 +115,18 @@ print("mean_std = ", np.std(cv_result["test_score"]))
 
 # --------　採用した特徴量 ---------------
 # 採用の可否状況
-mask = select.get_support()
+# mask = select.get_support()
 
-# 項目のリスト
-list_col = list(X_train.columns[1:])
+# # 項目のリスト
+# list_col = list(X_train.columns[1:])
 
-# 項目別の採用可否の一覧表
-for i, j in enumerate(list_col):
-    print("No" + str(i + 1), j, "=", mask[i])
+# # 項目別の採用可否の一覧表
+# for i, j in enumerate(list_col):
+#     print("No" + str(i + 1), j, "=", mask[i])
 
-# シェイプの確認
-X_selected = select.transform(X)
-print("X.shape={}, X_selected.shape={}".format(X.shape, X_selected.shape))
+# # シェイプの確認
+# X_selected = select.transform(X)
+# print("X.shape={}, X_selected.shape={}".format(X.shape, X_selected.shape))
 
 # testデータに対しての予測
 test_pred = pipeline.predict(X_test)
@@ -144,4 +156,4 @@ pred.columns = ["Perished"]
 # PassengerIdと結合
 submission = pd.concat([PassengerId, pred], axis=1)
 # submissionを保存
-submission.to_csv("./copy_model/predictions/submission.csv", index=False)
+submission.to_csv("./malti_model/predictions/submission.csv", index=False)

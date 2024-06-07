@@ -254,7 +254,7 @@ features = [
 X = train[features]
 Y = test[features]
 
-# 標準化
+# # 標準化
 scaler = StandardScaler()
 X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
 Y = pd.DataFrame(scaler.transform(Y), columns=Y.columns)  # type: ignore
