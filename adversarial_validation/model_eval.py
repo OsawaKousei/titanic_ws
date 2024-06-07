@@ -23,7 +23,8 @@ from sklearn.utils import all_estimators
 from xgboost import callback
 
 ########################################################################
-## sklearnの全てのモデルを試すプログラム-ここでの得点はあてにならない
+## sklearnの全てのモデルを試すプログラム-ここでの得点はあてにならなかった
+## cf:https://qiita.com/sudominoru/items/4c1d48093bbd3500dafb
 ########################################################################
 
 all_estimators(type_filter="classifier")

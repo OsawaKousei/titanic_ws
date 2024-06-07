@@ -32,6 +32,7 @@ warnings.filterwarnings("ignore")
 
 ########################################################################
 ## アンサンブル学習による予測
+## cf:https://qiita.com/bianca26neve/items/dc909fed3f708ecc547f
 ########################################################################
 
 
@@ -104,40 +105,6 @@ param_grid = {
     "bootstrap": [True, False],
 }
 
-##
-## グリッドサーチで最適なパラメータを探そうとしたが、時間がかかる上に、既定値の方が精度が高かったため、コメントアウト
-##
-
-# grid = GridSearchCV(
-#     estimator=RandomForestClassifier(random_state=1), param_grid=param_grid
-# )
-# grid = grid.fit(X_train, y_train)
-
-# print(grid.best_score_)
-# print(grid.best_params_)
-
-# # parameterをtxtファイルに保存
-# filter.save_dict(grid.best_params_, "./adversarial_validation/params/params.txt")
-
-# clf = RandomForestClassifier(
-#     random_state=10,
-#     warm_start=True,  # 既にフィットしたモデルに学習を追加
-#     n_estimators=26,
-#     max_depth=6,
-#     max_features="sqrt",
-# )
-# # pipeline = make_pipeline(select, clf)
-# pipeline = make_pipeline(clf)
-# pipeline.fit(X_train, y_train)
-
-# # pipeline = make_pipeline(select, grid.best_estimator_)
-# # pipeline.fit(X_train, y_train)
-
-
-# # フィット結果の表示
-# cv_result = cross_validate(pipeline, X_train, y_train, cv=10)
-# print("mean_score = ", np.mean(cv_result["test_score"]))
-# print("mean_std = ", np.std(cv_result["test_score"]))
 
 clf = RandomForestClassifier(
     random_state=10,

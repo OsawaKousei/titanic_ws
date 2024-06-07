@@ -106,6 +106,7 @@ param_grid = {
 
 ##
 ## グリッドサーチで最適なパラメータを探そうとしたが、時間がかかる上に、既定値の方が精度が高かったため、コメントアウト
+## cf:https://qiita.com/sudominoru/items/1c21cf4afaf67fda3fee
 ##
 
 # grid = GridSearchCV(
