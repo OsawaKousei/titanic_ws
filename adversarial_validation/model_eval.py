@@ -22,6 +22,10 @@ from sklearn.svm import SVC, LinearSVC
 from sklearn.utils import all_estimators
 from xgboost import callback
 
+########################################################################
+## sklearnの全てのモデルを試すプログラム-ここでの得点はあてにならない
+########################################################################
+
 all_estimators(type_filter="classifier")
 
 

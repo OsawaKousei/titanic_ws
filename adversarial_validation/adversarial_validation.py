@@ -12,6 +12,10 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 
 warnings.filterwarnings("ignore")
 
+########################################################################
+## testとtrainの分布が異なる変数を見つけるプログラム
+########################################################################
+
 
 # 乱数を固定する関数
 def reset_seed(seed: int) -> None:
