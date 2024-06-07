@@ -72,6 +72,7 @@ THRESHOLD = 0.4  # 0.5よりも小さい値を設定
 
 # 訓練データを水増し
 # X_train, y_train = mixup(X_train, y_train, MIX_ALPHA, MIX_NUM)
+# ↑ゴミなので削除
 
 
 # xgb.DMatrixによってオリジナルAPIで使用できる形にします

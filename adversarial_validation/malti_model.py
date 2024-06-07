@@ -86,7 +86,7 @@ THRESHOLD = 0.5
 
 # 訓練データを水増し
 # X_train, y_train = mixup(X_train, y_train, MIX_ALPHA, MIX_NUM)
-
+# ↑ゴミなので削除
 
 # 採用する特徴量の数を設定　25は全て
 select = SelectKBest(k=25)
