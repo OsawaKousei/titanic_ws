@@ -7,6 +7,11 @@ from sklearn.discriminant_analysis import StandardScaler
 
 warnings.filterwarnings("ignore")
 
+
+########################################################################
+## データの前処理を行うプログラム
+########################################################################
+
 # データの読み込み
 path = "~/titanic_ws/84.9/data/"
 train = pd.read_csv(path + "train.csv")

@@ -11,6 +11,10 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from xgboost import callback
 
+########################################################################
+## xgboostによる予測
+########################################################################
+
 warnings.filterwarnings("ignore")
 
 

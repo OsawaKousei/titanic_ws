@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
 
+########################################################################
+## deep learningモデル定義
+########################################################################
+
 
 class Net(nn.Module):
     def __init__(self, DROPOUT: float) -> None:

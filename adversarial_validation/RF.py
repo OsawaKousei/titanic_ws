@@ -27,6 +27,10 @@ from sklearn.pipeline import make_pipeline
 from sklearn.svm import SVC, LinearSVC
 from xgboost import callback
 
+########################################################################
+## ランダムフォレストによる予測
+########################################################################
+
 warnings.filterwarnings("ignore")
 
 

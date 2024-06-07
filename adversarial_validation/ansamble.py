@@ -30,6 +30,11 @@ from xgboost import callback
 warnings.filterwarnings("ignore")
 
 
+########################################################################
+## アンサンブル学習による予測
+########################################################################
+
+
 # 乱数を固定する関数
 def reset_seed(seed: int) -> None:
     os.environ["PYTHONHASHSEED"] = "0"

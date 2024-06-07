@@ -15,6 +15,10 @@ from simple_model import Net
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 
+########################################################################
+## deep learningによる予測ーオリジナルモデル、精度はごみ
+########################################################################
+
 warnings.filterwarnings("ignore")
 
 
