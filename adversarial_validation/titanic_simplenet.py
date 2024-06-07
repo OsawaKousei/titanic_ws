@@ -74,12 +74,12 @@ print("X_pred.shape: ", X_pred.shape)
 
 # ハイパーパラメータの設定
 BATCH_SIZE = 100
-WEIGHT_DECAY = 0.05
+WEIGHT_DECAY = 0.01
 LEARNING_RATE = 0.0001
 EPOCH = 500
-DROPOUT = 0.005
-THRESHOLD = 0.5
-PATIENCE = 1000  # 早期終了のパラメータ
+DROPOUT = 0.001
+THRESHOLD = 0.4
+PATIENCE = 100  # 早期終了のパラメータ
 
 # データをpytorchのtensorに変換
 X_train = torch.tensor(X_train.values, dtype=torch.float32)

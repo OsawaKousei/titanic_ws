@@ -7,7 +7,7 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.relu = nn.ReLU()
 
-        self.fc1 = nn.Linear(25, 64)
+        self.fc1 = nn.Linear(23, 64)
         self.fc2 = nn.Linear(64, 128)
         self.fc3 = nn.Linear(128, 64)
         self.fc4 = nn.Linear(64, 32)
