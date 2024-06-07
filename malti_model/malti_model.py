@@ -38,7 +38,7 @@ def reset_seed(seed: int) -> None:
 
 
 # 乱数を固定
-reset_seed(622)
+reset_seed(53)
 
 # データの読み込み
 path = "./malti_model/fixed_data/"
@@ -124,14 +124,14 @@ clf = RandomForestClassifier(
     random_state=10,
     warm_start=True,  # 既にフィットしたモデルに学習を追加
     n_estimators=26,
-    max_depth=6,
+    max_depth=10,
     max_features="sqrt",
 )
 
 est1 = GradientBoostingClassifier(n_estimators=100, random_state=1)
 est2 = clf
 est3 = HistGradientBoostingClassifier(
-    max_iter=100, random_state=1, max_leaf_nodes=31
+    max_iter=100, random_state=1, max_leaf_nodes=50
 )
 
 
@@ -140,7 +140,7 @@ vc3 = VotingClassifier(
     estimators=[("lr", est1), ("rf", est2), ("knn", est3)],
     voting="soft",
     flatten_transform=True,
-    weights=[1, 1, 1],
+    weights=[2, 1.0, 2],
 )
 
 pipeline = make_pipeline(vc3)
