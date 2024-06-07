@@ -156,9 +156,9 @@ vc3 = VotingClassifier(
     flatten_transform=True,
     weights=[
         1.0,
-        0.0,
         1.0,
-    ],  # randomforestを全く使わないほうが精度が高かったため、重みを0に設定
+        1.0,
+    ],
 )
 
 pipeline = make_pipeline(select, vc3)
