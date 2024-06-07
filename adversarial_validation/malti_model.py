@@ -51,6 +51,12 @@ TRAIN = TRAIN.drop("PassengerId", axis=1)
 Y = TRAIN["Perished"]
 # TRAINからPerishedを削除
 X = TRAIN.drop("Perished", axis=1)
+# Xから"Familysize"と"Title_3.0"を削除
+X = X.drop("Family_size", axis=1)
+X = X.drop("Title_3.0", axis=1)
+# predから"Familysize"と"Title_3.0"を削除
+PRED = PRED.drop("Family_size", axis=1)
+PRED = PRED.drop("Title_3.0", axis=1)
 
 # PREDからPassengerIdを取得
 PassengerId = PRED["PassengerId"]

@@ -12,6 +12,10 @@ path = "~/titanic_ws/84.9/data/"
 train = pd.read_csv(path + "train.csv")
 test = pd.read_csv(path + "test.csv")
 
+# trainとtestに'test'という列を追加
+train["test"] = 0
+test["test"] = 1
+
 # trainとtestを連結してdataとする
 data = pd.concat([train, test], sort=False)
 
@@ -193,7 +197,7 @@ features = [
     col
     for col in train.columns
     if col.startswith(("Pclass_", "Title_", "Family_survival_", "Cabin_"))
-] + ["Sex", "SibSp", "Parch", "Family_size"]
+] + ["Sex", "SibSp", "Parch", "Family_size", "test"]
 
 # 特徴量を取得
 X = train[features + ["Age"]]
@@ -216,5 +220,5 @@ Y["PassengerId"] = test["PassengerId"]
 
 
 # csvファイルに保存
-X.to_csv("./84.9/fixed_data/X.csv", index=False)
-Y.to_csv("./84.9/fixed_data/Y.csv", index=False)
+X.to_csv("./adversarial_validation/fixed_data/X.csv", index=False)
+Y.to_csv("./adversarial_validation/fixed_data/Y.csv", index=False)
